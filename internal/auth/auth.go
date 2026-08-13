@@ -14,19 +14,16 @@ var (
 	ErrInvalidToken = errors.New("invalid token")
 )
 
-// Validator defines how tokens are validated
 type Validator struct {
 	SecretKey []byte
 }
 
-// NewValidator creates a new JWT validator
 func NewValidator(secret string) *Validator {
 	return &Validator{
 		SecretKey: []byte(secret),
 	}
 }
 
-// Validate checks the request for a valid JWT
 func (v *Validator) Validate(r *http.Request) (*jwt.Token, error) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {

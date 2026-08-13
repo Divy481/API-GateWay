@@ -10,9 +10,7 @@ import (
 	"time"
 )
 
-// BenchmarkProxy measures the overhead of our highly tuned reverse proxy
 func BenchmarkProxy(b *testing.B) {
-	// 1. Create a dummy backend
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
@@ -21,7 +19,6 @@ func BenchmarkProxy(b *testing.B) {
 	
 	backendURL, _ := url.Parse(backend.URL)
 
-	// 2. Create the Proxy configuration
 	cfg := &config.Config{
 		Server: config.ServerConfig{
 			MaxIdleConns:          1000,
@@ -35,12 +32,10 @@ func BenchmarkProxy(b *testing.B) {
 
 	p := proxy.NewProxy(cfg)
 
-	// 3. Create a dummy request handler for benchmark
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		p.ForwardRequest(w, r, backendURL)
 	})
 	
-	// Create request
 	req := httptest.NewRequest(http.MethodGet, "http://localhost/", nil)
 
 	b.ResetTimer()

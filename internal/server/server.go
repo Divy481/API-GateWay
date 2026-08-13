@@ -11,7 +11,6 @@ import (
 	"os"
 )
 
-// Server represents the API Gateway HTTP server
 type Server struct {
 	httpServer *http.Server
 	config     *config.Config
@@ -21,7 +20,6 @@ type Server struct {
 	logger     *slog.Logger
 }
 
-// NewServer initializes a new Server with dependencies
 func NewServer(cfg *config.Config, p *proxy.Proxy, registry *discovery.Registry, lb loadbalancer.LoadBalancer, logger *slog.Logger) *Server {
 	if logger == nil {
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -35,10 +33,8 @@ func NewServer(cfg *config.Config, p *proxy.Proxy, registry *discovery.Registry,
 		logger:   logger,
 	}
 
-	// Create a new ServeMux
 	mux := http.NewServeMux()
 	
-	// Wire routes using the load balancer
 	for _, route := range cfg.Routes {
 		route := route
 		mux.HandleFunc(route.Path+"/", func(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +44,6 @@ func NewServer(cfg *config.Config, p *proxy.Proxy, registry *discovery.Registry,
 				return
 			}
 			
-			// Select an instance using Load Balancer
 			instance, err := srv.lb.Next(service)
 			if err != nil {
 				srv.logger.Warn("No healthy instances available", "route", route.ID)
@@ -56,12 +51,10 @@ func NewServer(cfg *config.Config, p *proxy.Proxy, registry *discovery.Registry,
 				return
 			}
 			
-			// Forward the request
 			srv.proxy.ForwardRequest(w, r, instance.URL)
 		})
 	}
 
-	// Add health check endpoint
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
@@ -79,13 +72,11 @@ func NewServer(cfg *config.Config, p *proxy.Proxy, registry *discovery.Registry,
 	return srv
 }
 
-// Start runs the HTTP server in a goroutine
 func (s *Server) Start() error {
 	s.logger.Info("Starting API Gateway", "address", s.config.Server.Address)
 	return s.httpServer.ListenAndServe()
 }
 
-// Shutdown gracefully shuts down the server
 func (s *Server) Shutdown(ctx context.Context) error {
 	s.logger.Info("Shutting down API Gateway")
 	return s.httpServer.Shutdown(ctx)

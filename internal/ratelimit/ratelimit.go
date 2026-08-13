@@ -8,23 +8,20 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// RateLimiter defines the interface for rate limiting
 type RateLimiter interface {
 	Allow(ctx context.Context, key string, limit int, window time.Duration) (bool, error)
 }
 
-// RedisSlidingWindow implements a distributed rate limiter using Redis
 type RedisSlidingWindow struct {
 	client *redis.Client
 }
 
-// NewRedisSlidingWindow creates a new Redis rate limiter
 func NewRedisSlidingWindow(redisAddr string) *RedisSlidingWindow {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     redisAddr,
-		Password: "", // no password set
-		DB:       0,  // use default DB
-		PoolSize: 100, // optimized for high throughput
+		Password: "", 
+		DB:       0,  
+		PoolSize: 100, 
 	})
 
 	return &RedisSlidingWindow{
@@ -32,11 +29,7 @@ func NewRedisSlidingWindow(redisAddr string) *RedisSlidingWindow {
 	}
 }
 
-// Allow checks if the request is allowed using a sliding window algorithm in Redis via Lua script
 func (r *RedisSlidingWindow) Allow(ctx context.Context, key string, limit int, window time.Duration) (bool, error) {
-	// A simple Lua script for sliding window.
-	// We use ZSET where score is timestamp, and value is a unique identifier (or just timestamp if we don't have collisions).
-	// For high throughput, a token bucket script is often preferred, but sliding window is requested.
 	
 	script := `
 		local key = KEYS[1]
@@ -58,7 +51,6 @@ func (r *RedisSlidingWindow) Allow(ctx context.Context, key string, limit int, w
 	`
 
 	now := time.Now().UnixMilli()
-	// ARGV4 is a random/unique value, we just use nanosecond to avoid ZSET collisions
 	uniqueStr := fmt.Sprintf("%d", time.Now().UnixNano()) 
 
 	result, err := r.client.Eval(ctx, script, []string{key}, limit, window.Milliseconds(), now, uniqueStr).Result()

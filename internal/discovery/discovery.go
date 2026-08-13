@@ -5,21 +5,18 @@ import (
 	"sync"
 )
 
-// Instance represents a single backend service instance
 type Instance struct {
 	URL     *url.URL
 	Healthy bool
-	Active  int64 // active connections (for LeastConn)
+	Active  int64 
 }
 
-// Service represents a cluster of instances for a specific route
 type Service struct {
 	ID        string
 	mu        sync.RWMutex
 	Instances []*Instance
 }
 
-// NewService creates a new Service registry
 func NewService(id string, urls []string) *Service {
 	instances := make([]*Instance, 0, len(urls))
 	for _, rawURL := range urls {
@@ -27,7 +24,7 @@ func NewService(id string, urls []string) *Service {
 		if parsed != nil {
 			instances = append(instances, &Instance{
 				URL:     parsed,
-				Healthy: true, // Assume healthy initially
+				Healthy: true, 
 			})
 		}
 	}
@@ -37,7 +34,6 @@ func NewService(id string, urls []string) *Service {
 	}
 }
 
-// GetHealthyInstances returns only the instances currently marked healthy
 func (s *Service) GetHealthyInstances() []*Instance {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -51,7 +47,6 @@ func (s *Service) GetHealthyInstances() []*Instance {
 	return healthy
 }
 
-// UpdateHealth updates the health status of an instance by URL
 func (s *Service) UpdateHealth(targetURL *url.URL, isHealthy bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -64,24 +59,20 @@ func (s *Service) UpdateHealth(targetURL *url.URL, isHealthy bool) {
 	}
 }
 
-// Registry holds all services
 type Registry struct {
 	Services map[string]*Service
 }
 
-// NewRegistry initializes a registry
 func NewRegistry() *Registry {
 	return &Registry{
 		Services: make(map[string]*Service),
 	}
 }
 
-// AddService adds a service to the registry
 func (r *Registry) AddService(s *Service) {
 	r.Services[s.ID] = s
 }
 
-// GetService retrieves a service by ID
 func (r *Registry) GetService(id string) *Service {
 	return r.Services[id]
 }

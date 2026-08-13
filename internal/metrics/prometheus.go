@@ -6,7 +6,6 @@ import (
 )
 
 var (
-	// GatewayRequestsTotal counts total HTTP requests
 	GatewayRequestsTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "gateway_requests_total",
@@ -15,7 +14,6 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
-	// GatewayRequestDuration measures request latency
 	GatewayRequestDuration = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "gateway_request_duration_seconds",
@@ -25,7 +23,6 @@ var (
 		[]string{"method", "path"},
 	)
 
-	// UpstreamRequestDuration measures backend latency
 	UpstreamRequestDuration = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "upstream_latency_seconds",
@@ -35,7 +32,6 @@ var (
 		[]string{"upstream"},
 	)
 
-	// RateLimitRejectedTotal counts requests rejected by rate limiting
 	RateLimitRejectedTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "rate_limit_rejected_total",
@@ -44,7 +40,6 @@ var (
 		[]string{"route"},
 	)
 
-	// CircuitBreakerOpenTotal counts how many times the circuit breaker opened
 	CircuitBreakerOpenTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "circuit_breaker_open_total",

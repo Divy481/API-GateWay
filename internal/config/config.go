@@ -8,13 +8,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Config represents the top-level configuration for the API Gateway
 type Config struct {
 	Server ServerConfig `yaml:"server"`
 	Routes []Route      `yaml:"routes"`
 }
 
-// ServerConfig configures the core HTTP server
 type ServerConfig struct {
 	Address               string        `yaml:"address"`
 	ReadTimeout           time.Duration `yaml:"read_timeout"`
@@ -29,14 +27,12 @@ type ServerConfig struct {
 	DialTimeout           time.Duration `yaml:"dial_timeout"`
 }
 
-// Route defines an upstream route and its behaviors
 type Route struct {
 	ID        string   `yaml:"id"`
 	Path      string   `yaml:"path"`
 	Upstreams []string `yaml:"upstreams"`
 }
 
-// LoadConfig reads and parses the YAML configuration file
 func LoadConfig(filename string) (*Config, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -48,7 +44,6 @@ func LoadConfig(filename string) (*Config, error) {
 		return nil, fmt.Errorf("error parsing config file: %w", err)
 	}
 
-	// Set defaults if not provided
 	if cfg.Server.Address == "" {
 		cfg.Server.Address = ":8080"
 	}
